@@ -15,6 +15,18 @@ type game struct {
 	used      []string // Good guesses
 }
 
+func welcomePlayer() {
+	asciiArt := `
+	 _   _    _    _   _  ____ __  __    _    _   _ 
+	| | | |  / \  | \ | |/ ___|  \/  |  / \  | \ | |
+	| |_| | / _ \ |  \| | |  _| |\/| | / _ \ |  \| |
+	|  _  |/ ___ \| |\  | |_| | |  | |/ ___ \| |\  |
+	|_| |_/_/   \_\_| \_|\____|_|  |_/_/   \_\_| \_|
+													
+	`
+	fmt.Println(asciiArt)
+}
+
 func initializeGame(turnsLeft int, word string) game {
 	letters := strings.Split(word, "")
 	return game{turnsLeft: turnsLeft, letters: letters, used: []string{}}
@@ -27,7 +39,7 @@ func Play() {
 		"banana",
 		"orange",
 	}
-	fmt.Println("Welcome to Hangman game")
+	welcomePlayer()
 	choosenWord := hangman.PickWord(words)
 	fmt.Println("Your word has", len(choosenWord), "letters")
 	game := initializeGame(2, choosenWord)
