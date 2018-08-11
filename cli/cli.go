@@ -72,6 +72,7 @@ func Play() {
 
 		if hangman.HasWon(game.letters, game.used) == true {
 			fmt.Println("YOU WON!!!")
+			fmt.Printf("The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
 
