@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type game struct {
@@ -34,6 +36,12 @@ func initializeGame(turnsLeft int, word string) game {
 
 // Play : play the game
 func Play() {
+	// Colored messages
+	red := color.New(color.FgRed)
+	green := color.New(color.FgGreen)
+	boldGreen := color.New(color.FgGreen, color.Bold)
+	yellow := color.New(color.FgYellow)
+
 	words := []string{
 		"apple",
 		"banana",
@@ -58,21 +66,21 @@ func Play() {
 		fmt.Printf("Your guess was '%s'\n", guess)
 
 		if hangman.LetterInWord(guess, game.letters) {
-			fmt.Println("Good guess!")
+			green.Println("Good guess!")
 			game.used = append(game.used, guess)
 		} else {
-			fmt.Printf("Sorry, '%s' is not in the word...\n", guess)
+			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
 			game.turnsLeft--
 		}
 
 		if game.turnsLeft == 0 {
-			fmt.Printf("You lost! The word was: %s\n", choosenWord)
+			red.Printf("You lost! The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
 
 		if hangman.HasWon(game.letters, game.used) == true {
-			fmt.Println("YOU WON!!!")
-			fmt.Printf("The word was: %s\n", choosenWord)
+			boldGreen.Println("YOU WON!!!")
+			green.Printf("The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
 
