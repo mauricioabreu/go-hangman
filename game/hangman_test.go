@@ -35,3 +35,14 @@ func TestRevealWord(t *testing.T) {
 		t.Errorf("It looks like the revealed word is not correct. Got %s, should be '___'", revealedWord)
 	}
 }
+
+func TestAskForHint(t *testing.T) {
+	letters := []string{"f", "o", "o"}
+	goodGuesses := []string{"o"}
+
+	hint := AskForHint(letters, goodGuesses)
+
+	if hint != "f" {
+		t.Error("Got wrong hint. It should be 'f' since it is the only option")
+	}
+}

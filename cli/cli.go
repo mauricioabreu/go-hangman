@@ -12,9 +12,10 @@ import (
 )
 
 type game struct {
-	turnsLeft int      // Remaining attempts
-	letters   []string // letters in the word
-	used      []string // Good guesses
+	turnsLeft      int      // Remaining attempts
+	letters        []string // letters in the word
+	used           []string // Good guesses
+	availableHints int      // Total of hints available
 }
 
 func welcomePlayer() {
@@ -31,7 +32,7 @@ func welcomePlayer() {
 
 func initializeGame(turnsLeft int, word string) game {
 	letters := strings.Split(word, "")
-	return game{turnsLeft: turnsLeft, letters: letters, used: []string{}}
+	return game{turnsLeft: turnsLeft, letters: letters, used: []string{}, availableHints: 3}
 }
 
 // Play : play the game
@@ -54,7 +55,7 @@ func Play() {
 	reader := bufio.NewReader(os.Stdin)
 	// Game loop!
 	for {
-		fmt.Println("Guess a letter for the word:")
+		fmt.Println("Guess a letter for the word or use '.h' for a hint:")
 		guess, error := reader.ReadString('\n')
 		guess = strings.TrimSpace(guess)
 
@@ -63,7 +64,16 @@ func Play() {
 			os.Exit(1)
 		}
 
-		fmt.Printf("Your guess was '%s'\n", guess)
+		if guess == ".h" {
+			if game.availableHints == 0 {
+				red.Println("No more hints to use...")
+				continue
+			}
+			guess = hangman.AskForHint(game.letters, game.used)
+			game.availableHints--
+		} else {
+			fmt.Printf("Your guess was '%s'\n", guess)
+		}
 
 		if hangman.LetterInWord(guess, game.letters) {
 			green.Println("Good guess!")

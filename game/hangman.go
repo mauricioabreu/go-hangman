@@ -50,3 +50,26 @@ func HasWon(letters []string, used []string) bool {
 	}
 	return ocurrences >= len(letters)
 }
+
+// AskForHint : Allow player to ask for a hint
+func AskForHint(letters []string, used []string) string {
+	var possibleHints []string
+
+	// Check which letters can be given as a hint
+	// that were not used yet. If no good guess was found,
+	// indicate any letter of the word.
+	if len(used) > 0 {
+		for _, letter := range letters {
+			for _, goodGuess := range used {
+				if letter != goodGuess {
+					possibleHints = append(possibleHints, letter)
+				}
+			}
+		}
+	} else {
+		possibleHints = letters
+	}
+	rand.Seed(time.Now().Unix())
+	hintIndex := rand.Intn(len(possibleHints))
+	return possibleHints[hintIndex]
+}
