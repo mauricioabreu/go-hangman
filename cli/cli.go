@@ -76,8 +76,12 @@ func Play() {
 		}
 
 		if hangman.LetterInWord(guess, game.letters) {
-			green.Println("Good guess!")
-			game.used = append(game.used, guess)
+			if hangman.LetterInWord(guess, game.used) == false {
+				green.Println("Good guess!")
+				game.used = append(game.used, guess)
+			} else {
+				yellow.Printf("Letter '%s' was already used...\n", guess)
+			}
 		} else {
 			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
 			game.turnsLeft--
