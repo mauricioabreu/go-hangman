@@ -6,13 +6,13 @@ func TestLetterInWord(t *testing.T) {
 	word := []string{"f", "o", "o"}
 
 	guess := "f"
-	hasLetter := LetterInWord(guess, word)
+	hasLetter := letterInWord(guess, word)
 	if hasLetter != true {
 		t.Errorf("Word %s does not contain letter %s", word, guess)
 	}
 
 	guess = "c"
-	hasLetter = LetterInWord(guess, word)
+	hasLetter = letterInWord(guess, word)
 	if hasLetter == true {
 		t.Errorf("Word %s should not contain letter %s", word, guess)
 	}

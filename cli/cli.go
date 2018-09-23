@@ -11,13 +11,6 @@ import (
 	"github.com/fatih/color"
 )
 
-type game struct {
-	turnsLeft      int      // Remaining attempts
-	letters        []string // letters in the word
-	used           []string // Good guesses
-	availableHints int      // Total of hints available
-}
-
 func welcomePlayer() {
 	asciiArt := `
 	 _   _    _    _   _  ____ __  __    _    _   _ 
@@ -30,9 +23,8 @@ func welcomePlayer() {
 	fmt.Println(asciiArt)
 }
 
-func initializeGame(turnsLeft int, word string) game {
-	letters := strings.Split(word, "")
-	return game{turnsLeft: turnsLeft, letters: letters, used: []string{}, availableHints: 3}
+func initializeGame(turnsLeft int, word string) hangman.Game {
+	return hangman.NewGame(turnsLeft, word)
 }
 
 // Play : play the game
@@ -51,7 +43,7 @@ func Play() {
 	welcomePlayer()
 	choosenWord := hangman.PickWord(words)
 	fmt.Println("Your word has", len(choosenWord), "letters")
-	game := initializeGame(2, choosenWord)
+	game := initializeGame(3, choosenWord)
 	reader := bufio.NewReader(os.Stdin)
 	// Game loop!
 	for {
@@ -65,39 +57,39 @@ func Play() {
 		}
 
 		if guess == ".h" {
-			if game.availableHints == 0 {
+			if game.AvailableHints == 0 {
 				red.Println("No more hints to use...")
 				continue
 			}
-			guess = hangman.AskForHint(game.letters, game.used)
-			game.availableHints--
+			game, guess = hangman.AskForHint(game, game.Letters, game.Used)
 		} else {
 			fmt.Printf("Your guess was '%s'\n", guess)
 		}
 
-		if hangman.LetterInWord(guess, game.letters) {
-			if hangman.LetterInWord(guess, game.used) == false {
-				green.Println("Good guess!")
-				game.used = append(game.used, guess)
-			} else {
-				yellow.Printf("Letter '%s' was already used...\n", guess)
-			}
-		} else {
-			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
-			game.turnsLeft--
+		game = hangman.MakeAGuess(game, guess)
+		if game.State == "goodGuess" {
+			green.Println("Good guess!")
 		}
 
-		if game.turnsLeft == 0 {
+		if game.State == "alreadyGuessed" {
+			yellow.Printf("Letter '%s' was already used...\n", guess)
+		}
+
+		if game.State == "badGuess" {
+			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
+		}
+
+		if game.State == "lost" {
 			red.Printf("You lost! The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
 
-		if hangman.HasWon(game.letters, game.used) == true {
+		if game.State == "won" {
 			boldGreen.Println("YOU WON!!!")
 			green.Printf("The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
 
-		fmt.Println(hangman.RevealWord(game.letters, game.used))
+		fmt.Println(hangman.RevealWord(game.Letters, game.Used))
 	}
 }
