@@ -4,10 +4,13 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Game : gameplay state
 type Game struct {
+	ID             string   // Game identifier
 	State          string   // Game state
 	TurnsLeft      int      // Remaining attempts
 	Letters        []string // letters in the word
@@ -86,7 +89,7 @@ func AskForHint(game Game, letters []string, used []string) (Game, string) {
 // NewGame : Start a new game
 func NewGame(turnsLeft int, word string) Game {
 	letters := strings.Split(word, "")
-	return Game{State: "initial", TurnsLeft: turnsLeft, Letters: letters, Used: []string{}, AvailableHints: 3}
+	return Game{ID: uuid.New().String(), State: "initial", TurnsLeft: turnsLeft, Letters: letters, Used: []string{}, AvailableHints: 3}
 }
 
 // MakeAGuess : Process the player guess
