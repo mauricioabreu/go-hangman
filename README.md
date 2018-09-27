@@ -15,3 +15,19 @@ The game is in development phase but the architecture we are aiming looks like t
 ![Hangman architecture overview, with all components connected](misc/hangman_architecture.png "Architecture overview")
 
 An API provides an elegant way to query and mutate the game state. Any client (command line interfaces, browsers) can connect to this API which talks to the backend server, executing the actions needed. There is also a storage that persists every move.
+
+## ReST API
+
+A ReST API is being developed to provide a consistent way to develop a new client based on the server.
+
+To interact with the server, you first need to run it:
+
+    go run http/api.go
+
+After having the server up and running you can start to talk to the API. 
+
+### Starting a new game:
+
+    curl -sv http://localhost:8000/game -XGET
+
+This endpoit returns a header `Location` with a new endpoint, used to make guesses.
