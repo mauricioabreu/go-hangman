@@ -13,7 +13,7 @@ type Game struct {
 	ID             string   // Game identifier
 	State          string   // Game state
 	TurnsLeft      int      // Remaining attempts
-	Letters        []string // letters in the word
+	Letters        []string // Letters in the word
 	Used           []string // Good guesses
 	AvailableHints int      // Total of hints available
 }

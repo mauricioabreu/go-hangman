@@ -24,6 +24,7 @@ func newGame(w http.ResponseWriter, r *http.Request) {
 	}
 	choosenWord := hangman.PickWord(words)
 	game := hangman.NewGame(3, choosenWord)
+	hangman.CreateGame(game)
 	w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
 }
 
