@@ -28,6 +28,14 @@ After having the server up and running you can start to talk to the API.
 
 ### Starting a new game:
 
-    curl -sv http://localhost:8000/game -XGET
+    curl -sv http://localhost:8000/games -XGET
 
 This endpoit returns a header `Location` with a new endpoint, used to make guesses.
+
+### Checking the current status of a game:
+
+The `ID` in the `Location` header can be used to know the current state of the game:
+
+    curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83 -XGET
+
+A JSON response will be returned, containing a pretty representation of the game. If the game does not exists, HTTP 404 status will be returned otherwise.
