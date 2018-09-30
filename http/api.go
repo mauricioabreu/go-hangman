@@ -1,8 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
-	"go-hangman/game"
+	"go-hangman/db"
+	hangman "go-hangman/game"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	// Used to access pgsql driver
+	_ "github.com/lib/pq"
 )
 
 type gameInfoJSON struct {
@@ -32,13 +36,13 @@ func newGame(w http.ResponseWriter, r *http.Request) {
 	}
 	choosenWord := hangman.PickWord(words)
 	game := hangman.NewGame(3, choosenWord)
-	hangman.CreateGame(game)
+	database.DbStore.CreateGame(game)
 	w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
 }
 
 func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	game, err := hangman.RetrieveGame(params["id"])
+	game, err := database.DbStore.RetrieveGame(params["id"])
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -63,7 +67,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	var guess userGuess
 
 	params := mux.Vars(r)
-	game, err := hangman.RetrieveGame(params["id"])
+	game, err := database.DbStore.RetrieveGame(params["id"])
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -82,9 +86,9 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game = hangman.MakeAGuess(game, guess.Guess)
-	hangman.UpdateGame(game)
+	database.DbStore.UpdateGame(game)
 
-	game, err = hangman.RetrieveGame(game.ID)
+	game, err = database.DbStore.RetrieveGame(game.ID)
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
 		TurnsLeft:      game.TurnsLeft,
@@ -100,6 +104,19 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	connStr := "user=postgres dbname=hangman password=postgres sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+
+	database.InitStore(&database.DB{DB: db})
+
 	router := mux.NewRouter()
 	// Register HTTP endpoints
 	router.HandleFunc("/games", newGame).Methods("GET")
