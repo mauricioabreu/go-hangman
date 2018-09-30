@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"go-hangman/game"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -15,6 +16,10 @@ type gameInfoJSON struct {
 	TurnsLeft      int      `json:"turns_left"`
 	Used           []string `json:"used"`
 	AvailableHints int      `json:"available_hints"`
+}
+
+type userGuess struct {
+	Guess string
 }
 
 func newGame(w http.ResponseWriter, r *http.Request) {
@@ -41,19 +46,47 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
 		TurnsLeft:      game.TurnsLeft,
-		Used:           strings.Split(game.Used, ""),
+		Used:           game.Used,
 		AvailableHints: game.AvailableHints,
 	}
 	buff, error := json.MarshalIndent(responseJSON, "", "\t")
 	if error != nil {
 		log.Fatal("Could not serialize game")
 	}
+
 	w.Write(buff)
+}
+
+func makeAGuess(w http.ResponseWriter, r *http.Request) {
+	var guess userGuess
+
+	params := mux.Vars(r)
+	game, err := hangman.RetrieveGame(params["id"])
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Ready request body
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(body, &guess)
+	if err != nil {
+		panic(err)
+	}
+
+	game = hangman.MakeAGuess(game, guess.Guess)
+	hangman.UpdateGame(game)
 }
 
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/games", newGame).Methods("GET")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
+	router.HandleFunc("/games/{id}", makeAGuess).Methods("PUT")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
