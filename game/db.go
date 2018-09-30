@@ -69,7 +69,6 @@ func RetrieveGame(id string) (Game, error) {
 		fmt.Println("No rows were returned!")
 		return Game{}, err
 	case nil:
-		fmt.Println(row)
 		return Game{ID: uuid, TurnsLeft: turnsLeft, Letters: strings.Split(word, ""), Used: strings.Split(used, ""), AvailableHints: availableHints}, nil
 	default:
 		panic(err)

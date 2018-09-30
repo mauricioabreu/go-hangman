@@ -49,7 +49,7 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 		Used:           game.Used,
 		AvailableHints: game.AvailableHints,
 	}
-	buff, error := json.MarshalIndent(responseJSON, "", "\t")
+	buff, error := json.MarshalIndent(responseJSON, "", "    ")
 	if error != nil {
 		log.Fatal("Could not serialize game")
 	}
@@ -89,7 +89,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 		Used:           game.Used,
 		AvailableHints: game.AvailableHints,
 	}
-	buff, error := json.MarshalIndent(responseJSON, "", "\t")
+	buff, error := json.MarshalIndent(responseJSON, "", "    ")
 	if error != nil {
 		log.Fatal("Could not serialize game")
 	}
