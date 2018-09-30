@@ -87,6 +87,6 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/games", newGame).Methods("GET")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
-	router.HandleFunc("/games/{id}", makeAGuess).Methods("PUT")
+	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
