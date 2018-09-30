@@ -81,6 +81,20 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 
 	game = hangman.MakeAGuess(game, guess.Guess)
 	hangman.UpdateGame(game)
+
+	game, err = hangman.RetrieveGame(game.ID)
+	responseJSON := gameInfoJSON{
+		ID:             game.ID,
+		TurnsLeft:      game.TurnsLeft,
+		Used:           game.Used,
+		AvailableHints: game.AvailableHints,
+	}
+	buff, error := json.MarshalIndent(responseJSON, "", "\t")
+	if error != nil {
+		log.Fatal("Could not serialize game")
+	}
+
+	w.Write(buff)
 }
 
 func main() {
