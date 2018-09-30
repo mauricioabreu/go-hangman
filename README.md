@@ -39,3 +39,10 @@ The `ID` in the `Location` header can be used to know the current state of the g
     curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83 -XGET
 
 A JSON response will be returned, containing a pretty representation of the game. If the game does not exists, HTTP 404 status will be returned otherwise.
+
+### Guessing a letter for a word:
+
+You can now guess a letter for the word by sending a JSON payload to the server:
+
+    curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83/guesses -XPUT -H "Content-Type: application/json" -d '{"guess": "a"}'
+
