@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -99,8 +101,11 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := mux.NewRouter()
+	// Register HTTP endpoints
 	router.HandleFunc("/games", newGame).Methods("GET")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
 	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	// Set logger handler for the server
+	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
+	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
 }
