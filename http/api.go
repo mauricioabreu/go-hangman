@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"go-hangman/db"
 	hangman "go-hangman/game"
 	"io/ioutil"
@@ -104,13 +106,23 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	connStr := "user=postgres dbname=hangman password=postgres sslmode=disable"
+	var dbUser string
+	var dbName string
+	var dbPassword string
+
+	flag.StringVar(&dbUser, "db_user", "postgres", "Database user")
+	flag.StringVar(&dbName, "db_name", "hangman", "Database name")
+	flag.StringVar(&dbPassword, "db_password", "postgres", "Database password")
+
+	flag.Parse()
+
+	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", dbUser, dbName, dbPassword)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = db.Ping()
 
+	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
