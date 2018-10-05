@@ -15,6 +15,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	// Used to access pgsql driver
 	_ "github.com/lib/pq"
 )
@@ -30,12 +31,18 @@ type userGuess struct {
 	Guess string
 }
 
-func newGame(w http.ResponseWriter, r *http.Request) {
-	words := []string{
-		"apple",
-		"banana",
-		"orange",
+func readWordsFromFile() []string {
+	b, err := ioutil.ReadFile("file.txt") // read words from file
+	if err != nil {
+		fmt.Print(err)
 	}
+	str := string(b) // convert content to a 'string'
+	words := strings.Split(str, ",")
+	return words
+}
+
+func newGame(w http.ResponseWriter, r *http.Request) {
+	words := readWordsFromFile()
 	choosenWord := hangman.PickWord(words)
 	game := hangman.NewGame(3, choosenWord)
 	database.DbStore.CreateGame(game)
