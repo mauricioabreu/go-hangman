@@ -35,13 +35,16 @@ func letterInWord(guess string, letters []string) bool {
 }
 
 // RevealWord : reveal the word by checking if the guesses made
-// are part of the choosen word.
+// are part of the choosen word. Hyphens, apostrophies, and spaces are free.
 func RevealWord(letters []string, used []string) string {
 	revealedWord := ""
 
 	for _, wordLetter := range letters {
 		if letterInWord(wordLetter, used) {
 			revealedWord += wordLetter
+		} else if isSpecial(wordLetter) {
+			revealedWord += wordLetter
+
 		} else {
 			revealedWord += "_"
 		}
@@ -50,16 +53,23 @@ func RevealWord(letters []string, used []string) string {
 	return revealedWord
 }
 
+func isSpecial(wordLetter string) bool {
+	return strings.ContainsAny("-' ", wordLetter)
+}
+
 func hasWon(letters []string, used []string) bool {
-	ocurrences := 0
+	occurrences := 0
 	for _, letter := range letters {
 		for _, goodGuess := range used {
 			if letter == goodGuess {
-				ocurrences++
+				occurrences++
 			}
 		}
+		if isSpecial(letter) {
+			occurrences++
+		}
 	}
-	return ocurrences >= len(letters)
+	return occurrences >= len(letters)
 }
 
 // AskForHint : Allow player to ask for a hint
