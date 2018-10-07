@@ -1,6 +1,9 @@
 package hangman
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestLetterInWord(t *testing.T) {
 	word := []string{"f", "o", "o"}
@@ -65,4 +68,16 @@ func TestWinsWithoutSpecial(t *testing.T) {
 		t.Errorf("It looks like the game state is wrong. Got %s, should be 'won'", g.State)
 	}
 
+}
+
+func TestAskForHint(t *testing.T) {
+	g := NewGame(3, "love")
+	availableHints := g.AvailableHints
+	g, hint := AskForHint(g, g.Letters, []string{})
+	if strings.Contains("love", hint) != true {
+		t.Errorf("The hint should be one of the letters in 'love'. Got %s", hint)
+	}
+	if availableHints-1 != g.AvailableHints {
+		t.Errorf("After asking for a hint, we must decrement. Available hints so far: %d", g.AvailableHints)
+	}
 }
