@@ -12,9 +12,6 @@ jobs:
       - checkout
 
       # specify any bash command here prefixed with `run: `
-      - run: go get -u github.com/fatih/color
-      - run: go get -u github.com/lib/pq
-      - run: go get -u github.com/google/uuid
-      - run: go get -u github.com/gorilla/handlers
-      - run: go get -u github.com/gorilla/mux
+      - run: go get -u github.com/golang/dep/cmd/dep
+      - run: dep ensure
       - run: go test -v ./...
