@@ -1,5 +1,7 @@
 # Hangman
 
+[![CircleCI](https://circleci.com/gh/mauricioabreu/go-hangman.svg?style=svg)](https://circleci.com/gh/mauricioabreu/go-hangman)
+
 Hangman game written in golang.
 
 `Hangman` is a very famous game that a player must guess
