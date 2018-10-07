@@ -1,6 +1,6 @@
 # Hangman
 
-Hangman game written in golang.
+Hangman game written in language golang.
 
 `Hangman` is a very famous game that a player must guess
 the word by suggesting letters being limited by a low number of
