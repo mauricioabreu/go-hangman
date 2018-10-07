@@ -18,6 +18,16 @@ The game is in development phase but the architecture we are aiming looks like t
 
 An API provides an elegant way to query and mutate the game state. Any client (command line interfaces, browsers) can connect to this API which talks to the backend server, executing the actions needed. There is also a storage that persists every move.
 
+## Installing
+
+To install the project, you can use the [dep](https://golang.github.io/dep/) tool.
+
+Follow the installation guide. Then you can use the command `dep ensure` to install the dependencies.
+
+It may take a while. After that, all the dependencies will be installed inside `vendor`.
+
+Use the command `dep status` to check every dependency and its version.
+
 ## ReST API
 
 A ReST API is being developed to provide a consistent way to develop a new client based on the server.
