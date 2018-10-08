@@ -40,7 +40,7 @@ After having the server up and running you can start to talk to the API.
 
 ### Starting a new game:
 
-    curl -sv http://localhost:8000/games -XGET
+    curl -sv http://localhost:8000/games -XPOST
 
 This endpoit returns a header `Location` with a new endpoint, used to make guesses.
 
@@ -57,4 +57,3 @@ A JSON response will be returned, containing a pretty representation of the game
 You can now guess a letter for the word by sending a JSON payload to the server:
 
     curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83/guesses -XPUT -H "Content-Type: application/json" -d '{"guess": "a"}'
-
