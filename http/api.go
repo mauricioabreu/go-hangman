@@ -131,7 +131,7 @@ func main() {
 
 	router := mux.NewRouter()
 	// Register HTTP endpoints
-	router.HandleFunc("/games", newGame).Methods("GET")
+	router.HandleFunc("/games", newGame).Methods("POST")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
 	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
 	// Set logger handler for the server
