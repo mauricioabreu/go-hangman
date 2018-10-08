@@ -29,12 +29,12 @@ func initializeGame(turnsLeft int, word string) hangman.Game {
 }
 
 func readWordsFromFile() []string {
-	b, err := ioutil.ReadFile("file.txt") // read words from file
+	b, err := ioutil.ReadFile("words/words.txt") // read words from file
 	if err != nil {
 		fmt.Print(err)
 	}
 	str := string(b) // convert content to a 'string'
-	words := strings.Split(str, ",")
+	words := strings.Split(str, "\n")
 	return words
 }
 
