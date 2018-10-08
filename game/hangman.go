@@ -8,20 +8,26 @@ import (
 	"github.com/google/uuid"
 )
 
+
+func GetSystemRandomInt(i int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(i)
+}
+
 // Game : gameplay state
 type Game struct {
-	ID             string   // Game identifier
-	State          string   // Game state
-	TurnsLeft      int      // Remaining attempts
-	Letters        []string // Letters in the word
-	Used           []string // Good guesses
-	AvailableHints int      // Total of hints available
+	ID             string        // Game identifier
+	State          string        // Game state
+	TurnsLeft      int           // Remaining attempts
+	Letters        []string      // Letters in the word
+	Used           []string      // Good guesses
+	AvailableHints int           // Total of hints available
+	GetRandomInt   func(int) int // Source of randomness
 }
 
 // PickWord : Randomly get a word from a set of words.
 func PickWord(words []string) string {
-	rand.Seed(time.Now().Unix())
-	wordIndex := rand.Intn(len(words))
+	wordIndex := GetSystemRandomInt(len(words))
 	return words[wordIndex]
 }
 
@@ -74,13 +80,21 @@ func hasWon(letters []string, used []string) bool {
 
 // AskForHint : Allow player to ask for a hint
 func AskForHint(game Game, letters []string, used []string) (Game, string) {
-	var possibleHints []string
+	var validLetters, possibleHints []string
+
+	// Filter out non-alphabetic characters from pool of hint
+	// characters
+	for _, letter := range letters {
+		if "a" <= letter && letter <= "z" {
+			validLetters = append(validLetters, letter)
+		}
+	}
 
 	// Check which letters can be given as a hint
 	// that were not used yet. If no good guess was found,
 	// indicate any letter of the word.
 	if len(used) > 0 {
-		for _, letter := range letters {
+		for _, letter := range validLetters {
 			for _, goodGuess := range used {
 				if letter != goodGuess {
 					possibleHints = append(possibleHints, letter)
@@ -88,10 +102,10 @@ func AskForHint(game Game, letters []string, used []string) (Game, string) {
 			}
 		}
 	} else {
-		possibleHints = letters
+		possibleHints = validLetters
 	}
-	rand.Seed(time.Now().Unix())
-	hintIndex := rand.Intn(len(possibleHints))
+
+	hintIndex := game.GetRandomInt(len(possibleHints))
 	game.AvailableHints--
 	return game, possibleHints[hintIndex]
 }
@@ -99,7 +113,7 @@ func AskForHint(game Game, letters []string, used []string) (Game, string) {
 // NewGame : Start a new game
 func NewGame(turnsLeft int, word string) Game {
 	letters := strings.Split(word, "")
-	return Game{ID: uuid.New().String(), State: "initial", TurnsLeft: turnsLeft, Letters: letters, Used: []string{}, AvailableHints: 3}
+	return Game{ID: uuid.New().String(), State: "initial", TurnsLeft: turnsLeft, Letters: letters, Used: []string{}, AvailableHints: 3, GetRandomInt: GetSystemRandomInt}
 }
 
 // MakeAGuess : Process the player guess
