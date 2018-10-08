@@ -81,3 +81,17 @@ func TestAskForHint(t *testing.T) {
 		t.Errorf("After asking for a hint, we must decrement. Available hints so far: %d", g.AvailableHints)
 	}
 }
+
+func TestAskForHintWithSpecial(t *testing.T) {
+	g := NewGame(3, "sugar-free")
+	g.GetRandomInt = func(i int) int { return 5 }
+
+	availableHints := g.AvailableHints
+	g, hint := AskForHint(g, g.Letters, []string{})
+	if strings.Contains("sugarfree", hint) != true {
+		t.Errorf("The hint should be one of the letters in 'sugarfree'. Got %s", hint)
+	}
+	if availableHints-1 != g.AvailableHints {
+		t.Errorf("After asking for a hint, we must decrement. Available hints so far: %d", g.AvailableHints)
+	}
+}
