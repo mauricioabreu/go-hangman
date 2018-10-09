@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"go-hangman/game"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -28,16 +27,6 @@ func initializeGame(turnsLeft int, word string) hangman.Game {
 	return hangman.NewGame(turnsLeft, word)
 }
 
-func readWordsFromFile() []string {
-	b, err := ioutil.ReadFile("words/words.txt") // read words from file
-	if err != nil {
-		fmt.Print(err)
-	}
-	str := string(b) // convert content to a 'string'
-	words := strings.Split(str, "\n")
-	return words
-}
-
 // Play : play the game
 func Play() {
 	// Colored messages
@@ -46,7 +35,7 @@ func Play() {
 	boldGreen := color.New(color.FgGreen, color.Bold)
 	yellow := color.New(color.FgYellow)
 
-	words := readWordsFromFile()
+	words := hangman.ReadWordsFromFile("words/words.txt")
 	welcomePlayer()
 	choosenWord := hangman.PickWord(words)
 	fmt.Println("Your word has", len(choosenWord), "letters")

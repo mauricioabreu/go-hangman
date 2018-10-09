@@ -1,13 +1,14 @@
 package hangman
 
 import (
+	"io/ioutil"
+	"log"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
-
 
 func GetSystemRandomInt(i int) int {
 	rand.Seed(time.Now().Unix())
@@ -138,4 +139,16 @@ func MakeAGuess(game Game, guess string) Game {
 	}
 
 	return game
+}
+
+// ReadWordsFromFile : Retrieve words from a text file
+func ReadWordsFromFile(filePath string) []string {
+	b, err := ioutil.ReadFile(filePath) // read words from file
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	str := string(b) // convert content to a 'string'
+	words := strings.Split(str, "\n")
+	return words
 }

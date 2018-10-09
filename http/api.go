@@ -31,18 +31,8 @@ type userGuess struct {
 	Guess string
 }
 
-func readWordsFromFile() []string {
-	b, err := ioutil.ReadFile("words/words.txt") // read words from file
-	if err != nil {
-		fmt.Print(err)
-	}
-	str := string(b) // convert content to a 'string'
-	words := strings.Split(str, "\n")
-	return words
-}
-
 func newGame(w http.ResponseWriter, r *http.Request) {
-	words := readWordsFromFile()
+	words := hangman.ReadWordsFromFile("words/words.txt")
 	choosenWord := hangman.PickWord(words)
 	game := hangman.NewGame(3, choosenWord)
 	database.DbStore.CreateGame(game)
