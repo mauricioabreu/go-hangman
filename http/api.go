@@ -155,6 +155,7 @@ func main() {
 	database.InitStore(&database.DB{DB: db})
 
 	router := mux.NewRouter()
+	router.Use(commonMiddleware)
 	// Register HTTP endpoints
 	router.HandleFunc("/games", customNewGame(wordsFile)).Methods("POST")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
@@ -162,5 +163,13 @@ func main() {
 	router.HandleFunc("/games/{id}", deleteGame).Methods("DELETE")
 	// Set logger handler for the server
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
+	log.Println("Starting HTTP server...")
 	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }
