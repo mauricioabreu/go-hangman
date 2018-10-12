@@ -61,3 +61,11 @@ A JSON response will be returned, containing a pretty representation of the game
 You can now guess a letter for the word by sending a JSON payload to the server:
 
     curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83/guesses -XPUT -H "Content-Type: application/json" -d '{"guess": "a"}'
+
+### Removing a game:
+
+If a game need to be deleted for some reason, there is a way to do that:
+
+    curl -sv http://localhost:8000/games/e46964a6-cd18-4820-b208-449ddbeb2d83 -XDELETE -H "Content-Type: application/json"
+
+If the game exists, HTTP 204 is returned - if the game does not exist HTTP 404 is returned. 

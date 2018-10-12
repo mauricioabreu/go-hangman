@@ -12,6 +12,7 @@ type Store interface {
 	CreateGame(game hangman.Game) error
 	UpdateGame(game hangman.Game) error
 	RetrieveGame(id string) (hangman.Game, error)
+	DeleteGame(id string) (bool, error)
 }
 
 // DB : Implement the Store interface
@@ -72,6 +73,22 @@ func (store *DB) RetrieveGame(id string) (hangman.Game, error) {
 	default:
 		panic(err)
 	}
+}
+
+// DeleteGame : remove a game from the database
+func (store *DB) DeleteGame(id string) (bool, error) {
+	result, err := store.DB.Exec("DELETE FROM hangman.games WHERE uuid = $1", id)
+	if err == nil {
+		// Check if there was a game to delete
+		count, err := result.RowsAffected()
+		if err == nil {
+			if count > 0 {
+				return true, err
+			}
+			return false, err
+		}
+	}
+	return false, err
 }
 
 // DbStore : database

@@ -58,9 +58,9 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 		Used:           game.Used,
 		AvailableHints: game.AvailableHints,
 	}
-	buff, error := json.MarshalIndent(responseJSON, "", "    ")
-	if error != nil {
-		log.Fatal("Could not serialize game")
+	buff, err := json.MarshalIndent(responseJSON, "", "    ")
+	if err != nil {
+		log.Fatalf("Could not serialize game. Error: %s", err)
 	}
 
 	w.Write(buff)
@@ -98,12 +98,25 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 		Used:           game.Used,
 		AvailableHints: game.AvailableHints,
 	}
-	buff, error := json.MarshalIndent(responseJSON, "", "    ")
-	if error != nil {
-		log.Fatal("Could not serialize game")
+	buff, err := json.MarshalIndent(responseJSON, "", "    ")
+	if err != nil {
+		log.Fatalf("Could not serialize game. Error: %s", err)
 	}
 
 	w.Write(buff)
+}
+
+func deleteGame(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	result, err := database.DbStore.DeleteGame(params["id"])
+	if err != nil {
+		log.Fatalf("Could not delete the game. Error: %s", err)
+	}
+	if result {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func main() {
@@ -144,6 +157,7 @@ func main() {
 	router.HandleFunc("/games", customNewGame(wordsFile)).Methods("POST")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
 	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
+	router.HandleFunc("/games/{id}", deleteGame).Methods("DELETE")
 	// Set logger handler for the server
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
 	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
