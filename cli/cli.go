@@ -74,33 +74,23 @@ func Play() {
 			game = hangman.MakeAGuess(game, guess)
 		}
 
-		if game.State == "goodGuess" {
+		switch game.State {
+		case "goodGuess":
 			green.Println("Good guess!")
-		}
-
-		if game.State == "alreadyGuessed" {
+		case "alreadyGuessed":
 			yellow.Printf("Letter '%s' was already used...\n", guess)
-		}
-
-		if game.State == "badGuess" {
+		case "badGuess":
 			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
-		}
-
-		if game.State == "gotHint" {
+		case "gotHint":
 			yellow.Printf("You have %d hints left.\n", game.AvailableHints)
-		}
-
-		if game.State == "lost" {
+		case "lost":
 			red.Printf("You lost! The word was: %s\n", choosenWord)
 			os.Exit(0)
-		}
-
-		if game.State == "won" {
+		case "won":
 			boldGreen.Println("YOU WON!!!")
 			green.Printf("The word was: %s\n", choosenWord)
 			os.Exit(0)
 		}
-
 		fmt.Println(hangman.RevealWord(game.Letters, game.Used))
 	}
 }
