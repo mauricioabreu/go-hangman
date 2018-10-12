@@ -60,9 +60,9 @@ func Play() {
 			game, guess = hangman.AskForHint(game, game.Letters, game.Used)
 		} else {
 			fmt.Printf("Your guess was '%s'\n", guess)
+			game = hangman.MakeAGuess(game, guess)
 		}
 
-		game = hangman.MakeAGuess(game, guess)
 		if game.State == "goodGuess" {
 			green.Println("Good guess!")
 		}
@@ -73,6 +73,10 @@ func Play() {
 
 		if game.State == "badGuess" {
 			yellow.Printf("Sorry, '%s' is not in the word...\n", guess)
+		}
+
+		if game.State == "gotHint" {
+			yellow.Printf("You have %d hints left.\n", game.AvailableHints)
 		}
 
 		if game.State == "lost" {

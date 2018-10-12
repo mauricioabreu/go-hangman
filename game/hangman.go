@@ -17,13 +17,13 @@ func GetSystemRandomInt(i int) int {
 
 // Game : gameplay state
 type Game struct {
-	ID             string        // Game identifier
-	State          string        // Game state
-	TurnsLeft      int           // Remaining attempts
-	Letters        []string      // Letters in the word
-	Used           []string      // Good guesses
-	AvailableHints int           // Total of hints available
-	GetRandomInt   func(int) int // Source of randomness
+	ID             string          // Game identifier
+	State          string          // Game state
+	TurnsLeft      int             // Remaining attempts
+	Letters        []string        // Letters in the word
+	Used           map[string]bool // Good guesses
+	AvailableHints int             // Total of hints available
+	GetRandomInt   func(int) int   // Source of randomness
 }
 
 // PickWord : Randomly get a word from a set of words.
@@ -43,11 +43,11 @@ func letterInWord(guess string, letters []string) bool {
 
 // RevealWord : reveal the word by checking if the guesses made
 // are part of the choosen word. Hyphens, apostrophies, and spaces are free.
-func RevealWord(letters []string, used []string) string {
+func RevealWord(letters []string, used map[string]bool) string {
 	revealedWord := ""
 
 	for _, wordLetter := range letters {
-		if letterInWord(wordLetter, used) {
+		if used[wordLetter] {
 			revealedWord += wordLetter
 		} else if isSpecial(wordLetter) {
 			revealedWord += wordLetter
@@ -64,15 +64,10 @@ func isSpecial(wordLetter string) bool {
 	return strings.ContainsAny("-' ", wordLetter)
 }
 
-func hasWon(letters []string, used []string) bool {
+func hasWon(letters []string, used map[string]bool) bool {
 	occurrences := 0
 	for _, letter := range letters {
-		for _, goodGuess := range used {
-			if letter == goodGuess {
-				occurrences++
-			}
-		}
-		if isSpecial(letter) {
+		if used[letter] || isSpecial(letter) {
 			occurrences++
 		}
 	}
@@ -80,7 +75,7 @@ func hasWon(letters []string, used []string) bool {
 }
 
 // AskForHint : Allow player to ask for a hint
-func AskForHint(game Game, letters []string, used []string) (Game, string) {
+func AskForHint(game Game, letters []string, used map[string]bool) (Game, string) {
 	var validLetters, possibleHints []string
 
 	// Filter out non-alphabetic characters from pool of hint
@@ -96,37 +91,44 @@ func AskForHint(game Game, letters []string, used []string) (Game, string) {
 	// indicate any letter of the word.
 	if len(used) > 0 {
 		for _, letter := range validLetters {
-			for _, goodGuess := range used {
-				if letter != goodGuess {
-					possibleHints = append(possibleHints, letter)
-				}
+			if !used[letter] {
+				possibleHints = append(possibleHints, letter)
 			}
 		}
 	} else {
 		possibleHints = validLetters
 	}
 
-	hintIndex := game.GetRandomInt(len(possibleHints))
+	hint := possibleHints[game.GetRandomInt(len(possibleHints))]
+	game.State = "gotHint"
+	game.Used[hint] = true
 	game.AvailableHints--
-	return game, possibleHints[hintIndex]
+	return game, hint
 }
 
 // NewGame : Start a new game
 func NewGame(turnsLeft int, word string) Game {
 	letters := strings.Split(word, "")
-	return Game{ID: uuid.New().String(), State: "initial", TurnsLeft: turnsLeft, Letters: letters, Used: []string{}, AvailableHints: 3, GetRandomInt: GetSystemRandomInt}
+	return Game{ID: uuid.New().String(),
+		State:          "initial",
+		TurnsLeft:      turnsLeft,
+		Letters:        letters,
+		Used:           make(map[string]bool),
+		AvailableHints: 3,
+		GetRandomInt:   GetSystemRandomInt,
+	}
 }
 
 // MakeAGuess : Process the player guess
 func MakeAGuess(game Game, guess string) Game {
 	if letterInWord(guess, game.Letters) {
 		// If already guessed this letter...
-		if letterInWord(guess, game.Used) == true {
+		if game.Used[guess] {
 			game.State = "alreadyGuessed"
 		} else {
-			game.Used = append(game.Used, guess)
+			game.Used[guess] = true
 			game.State = "goodGuess"
-			if hasWon(game.Letters, game.Used) == true {
+			if hasWon(game.Letters, game.Used) {
 				game.State = "won"
 			}
 		}
