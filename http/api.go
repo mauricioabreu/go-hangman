@@ -20,11 +20,20 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Retrieve all keys from a map
+func keysFromMap(used map[string]bool) []string {
+	keys := make([]string, 0, len(used))
+	for k := range used {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 type gameInfoJSON struct {
-	ID             string          `json:"id"`
-	TurnsLeft      int             `json:"turns_left"`
-	Used           map[string]bool `json:"used"`
-	AvailableHints int             `json:"available_hints"`
+	ID             string   `json:"id"`
+	TurnsLeft      int      `json:"turns_left"`
+	Used           []string `json:"used"`
+	AvailableHints int      `json:"available_hints"`
 }
 
 type userGuess struct {
@@ -55,7 +64,7 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
 		TurnsLeft:      game.TurnsLeft,
-		Used:           game.Used,
+		Used:           keysFromMap(game.Used),
 		AvailableHints: game.AvailableHints,
 	}
 	buff, error := json.MarshalIndent(responseJSON, "", "    ")
@@ -95,7 +104,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
 		TurnsLeft:      game.TurnsLeft,
-		Used:           game.Used,
+		Used:           keysFromMap(game.Used),
 		AvailableHints: game.AvailableHints,
 	}
 	buff, error := json.MarshalIndent(responseJSON, "", "    ")
