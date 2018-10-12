@@ -36,7 +36,11 @@ To interact with the server, you first need to run it:
 
     go run http/api.go
 
-After having the server up and running you can start to talk to the API. 
+After having the server up and running you can start to talk to the API.
+
+To specify a words file you want to load, you can use the `-words_file` command line option:
+
+    go run http/api.go -words_file=/path/to/my/file.txt
 
 ### Starting a new game:
 
