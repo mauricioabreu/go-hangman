@@ -2,8 +2,9 @@ package cli
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
-	"go-hangman/game"
+	hangman "go-hangman/game"
 	"log"
 	"os"
 	"strings"
@@ -29,13 +30,23 @@ func initializeGame(turnsLeft int, word string) hangman.Game {
 
 // Play : play the game
 func Play() {
+
+	var wordsFile string
+	flag.StringVar(&wordsFile, "words_file", "words/words.txt", "Words file")
+	flag.Parse()
+
+	// check if the words file is accessible
+	if _, err := os.Stat(wordsFile); err != nil {
+		log.Fatalf("Could not open the words file: %s\n", err)
+	}
+
 	// Colored messages
 	red := color.New(color.FgRed)
 	green := color.New(color.FgGreen)
 	boldGreen := color.New(color.FgGreen, color.Bold)
 	yellow := color.New(color.FgYellow)
 
-	words := hangman.ReadWordsFromFile("words/words.txt")
+	words := hangman.ReadWordsFromFile(wordsFile)
 	welcomePlayer()
 	choosenWord := hangman.PickWord(words)
 	fmt.Println("Your word has", len(choosenWord), "letters")
