@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"go-hangman/db"
+	database "go-hangman/db"
 	hangman "go-hangman/game"
 	"io/ioutil"
 	"log"
@@ -31,12 +31,16 @@ type userGuess struct {
 	Guess string
 }
 
-func newGame(w http.ResponseWriter, r *http.Request) {
-	words := hangman.ReadWordsFromFile("words/words.txt")
-	choosenWord := hangman.PickWord(words)
-	game := hangman.NewGame(3, choosenWord)
-	database.DbStore.CreateGame(game)
-	w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
+func customNewGame(wordsFile string) http.HandlerFunc {
+	words := hangman.ReadWordsFromFile(wordsFile)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		choosenWord := hangman.PickWord(words)
+		game := hangman.NewGame(3, choosenWord)
+		database.DbStore.CreateGame(game)
+		w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
+	}
+
 }
 
 func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
@@ -103,15 +107,24 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	var dbUser string
-	var dbName string
-	var dbPassword string
+	var (
+		dbUser     string
+		dbName     string
+		dbPassword string
+		wordsFile  string
+	)
 
 	flag.StringVar(&dbUser, "db_user", "postgres", "Database user")
 	flag.StringVar(&dbName, "db_name", "hangman", "Database name")
 	flag.StringVar(&dbPassword, "db_password", "postgres", "Database password")
+	flag.StringVar(&wordsFile, "words_file", "words/words.txt", "Words file")
 
 	flag.Parse()
+
+	// check if the words file is accessible
+	if _, err := os.Stat(wordsFile); err != nil {
+		log.Fatalf("Could not open the words file: %s\n", err)
+	}
 
 	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", dbUser, dbName, dbPassword)
 	db, err := sql.Open("postgres", connStr)
@@ -128,7 +141,7 @@ func main() {
 
 	router := mux.NewRouter()
 	// Register HTTP endpoints
-	router.HandleFunc("/games", newGame).Methods("POST")
+	router.HandleFunc("/games", customNewGame(wordsFile)).Methods("POST")
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
 	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
 	// Set logger handler for the server
