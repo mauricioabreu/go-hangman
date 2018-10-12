@@ -22,7 +22,7 @@ type DB struct {
 // CreateGame : Insert a new game into the database
 func (store *DB) CreateGame(game hangman.Game) error {
 	_, err := store.DB.Exec("INSERT INTO hangman.games (uuid, turns_left, word, used, available_hints) VALUES ($1, $2, $3, $4, $5)",
-		game.ID, game.TurnsLeft, toString(game.Letters), toString(game.Used), game.AvailableHints)
+		game.ID, game.TurnsLeft, toString(game.Letters), mapToString(game.Used), game.AvailableHints)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -35,7 +35,7 @@ func (store *DB) CreateGame(game hangman.Game) error {
 // UpdateGame : Update game state
 func (store *DB) UpdateGame(game hangman.Game) error {
 	_, err := store.DB.Exec("UPDATE hangman.games SET turns_left = $1, used = $2, available_hints = $3 WHERE uuid = $4",
-		game.TurnsLeft, toString(game.Used), game.AvailableHints, game.ID)
+		game.TurnsLeft, mapToString(game.Used), game.AvailableHints, game.ID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -63,7 +63,12 @@ func (store *DB) RetrieveGame(id string) (hangman.Game, error) {
 		log.Printf("No rows were returned for game ID: %s\n", id)
 		return hangman.Game{}, err
 	case nil:
-		return hangman.Game{ID: uuid, TurnsLeft: turnsLeft, Letters: strings.Split(word, ""), Used: strings.Split(used, ""), AvailableHints: availableHints}, nil
+		return hangman.Game{ID: uuid,
+			TurnsLeft:      turnsLeft,
+			Letters:        strings.Split(word, ""),
+			Used:           stringToMap(used),
+			AvailableHints: availableHints,
+		}, nil
 	default:
 		panic(err)
 	}
@@ -79,4 +84,20 @@ func InitStore(s Store) {
 
 func toString(arr []string) string {
 	return strings.Join(arr[:], "")
+}
+
+func mapToString(m map[string]bool) string {
+	str := ""
+	for key := range m {
+		str += key
+	}
+	return str
+}
+
+func stringToMap(str string) map[string]bool {
+	m := make(map[string]bool)
+	for _, letter := range strings.Split(str, "") {
+		m[letter] = true
+	}
+	return m
 }

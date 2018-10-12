@@ -23,7 +23,7 @@ func TestLetterInWord(t *testing.T) {
 
 func TestRevealWord(t *testing.T) {
 	letters := []string{"f", "o", "o"}
-	goodGuesses := []string{"o"}
+	goodGuesses := map[string]bool{"o": true}
 
 	revealedWord := RevealWord(letters, goodGuesses)
 	if revealedWord != "_oo" {
@@ -31,7 +31,7 @@ func TestRevealWord(t *testing.T) {
 	}
 
 	letters = []string{"b", "a", "r"}
-	goodGuesses = []string{"o"}
+	goodGuesses = map[string]bool{"o": true}
 
 	revealedWord = RevealWord(letters, goodGuesses)
 	if revealedWord != "___" {
@@ -41,7 +41,7 @@ func TestRevealWord(t *testing.T) {
 
 func TestRevealWordSpecial(t *testing.T) {
 	letters := []string{"s", "u", "g", "a", "r", "-", "f", "r", "e", "e"}
-	goodGuesses := []string{"e"}
+	goodGuesses := map[string]bool{"e": true}
 
 	revealedWord := RevealWord(letters, goodGuesses)
 	if revealedWord != "_____-__ee" {
@@ -49,7 +49,7 @@ func TestRevealWordSpecial(t *testing.T) {
 	}
 
 	letters = []string{"b", "o", "b", "'", "s", " ", "p", "e", "n"}
-	goodGuesses = []string{"b"}
+	goodGuesses = map[string]bool{"b": true}
 
 	revealedWord = RevealWord(letters, goodGuesses)
 	if revealedWord != "b_b'_ ___" {
@@ -73,7 +73,7 @@ func TestWinsWithoutSpecial(t *testing.T) {
 func TestAskForHint(t *testing.T) {
 	g := NewGame(3, "love")
 	availableHints := g.AvailableHints
-	g, hint := AskForHint(g, g.Letters, []string{})
+	g, hint := AskForHint(g, g.Letters, make(map[string]bool))
 	if strings.Contains("love", hint) != true {
 		t.Errorf("The hint should be one of the letters in 'love'. Got %s", hint)
 	}
@@ -87,7 +87,7 @@ func TestAskForHintWithSpecial(t *testing.T) {
 	g.GetRandomInt = func(i int) int { return 5 }
 
 	availableHints := g.AvailableHints
-	g, hint := AskForHint(g, g.Letters, []string{})
+	g, hint := AskForHint(g, g.Letters, make(map[string]bool))
 	if strings.Contains("sugarfree", hint) != true {
 		t.Errorf("The hint should be one of the letters in 'sugarfree'. Got %s", hint)
 	}
