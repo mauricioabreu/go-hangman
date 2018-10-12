@@ -121,20 +121,24 @@ func NewGame(turnsLeft int, word string) Game {
 
 // MakeAGuess : Process the player guess
 func MakeAGuess(game Game, guess string) Game {
-	if letterInWord(guess, game.Letters) {
-		// If already guessed this letter...
-		if game.Used[guess] {
-			game.State = "alreadyGuessed"
-		} else {
-			game.Used[guess] = true
-			game.State = "goodGuess"
-			if hasWon(game.Letters, game.Used) {
-				game.State = "won"
-			}
+	// Don't need to process the guess if the game is already lost
+	if game.State == "lost" {
+		return game
+	}
+
+	// If already guessed this letter...
+	if game.Used[guess] {
+		game.State = "alreadyGuessed"
+	} else if letterInWord(guess, game.Letters) {
+		game.Used[guess] = true
+		game.State = "goodGuess"
+		if hasWon(game.Letters, game.Used) {
+			game.State = "won"
 		}
 	} else {
 		game.TurnsLeft--
 		game.State = "badGuess"
+		game.Used[guess] = true
 		if game.TurnsLeft == 0 {
 			game.State = "lost"
 		}

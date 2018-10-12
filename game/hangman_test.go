@@ -67,7 +67,6 @@ func TestWinsWithoutSpecial(t *testing.T) {
 	if g.State != "won" {
 		t.Errorf("It looks like the game state is wrong. Got %s, should be 'won'", g.State)
 	}
-
 }
 
 func TestAskForHint(t *testing.T) {
@@ -93,5 +92,26 @@ func TestAskForHintWithSpecial(t *testing.T) {
 	}
 	if availableHints-1 != g.AvailableHints {
 		t.Errorf("After asking for a hint, we must decrement. Available hints so far: %d", g.AvailableHints)
+	}
+}
+
+func TestGameFlowLose(t *testing.T) {
+	g := NewGame(3, "apple")
+	// Misses 3 letters in a row so we lose the game
+	g = MakeAGuess(g, "x")
+	g = MakeAGuess(g, "y")
+	g = MakeAGuess(g, "z")
+
+	if g.State != "lost" {
+		t.Errorf("Game state should be 'lost'. Got %s", g.State)
+	}
+	if g.TurnsLeft != 0 {
+		t.Errorf("Game must have no turns left. Got %d", g.TurnsLeft)
+	}
+
+	g = MakeAGuess(g, "r")
+	g = MakeAGuess(g, "t")
+	if g.TurnsLeft != 0 {
+		t.Errorf("Game must have no turns left. Got %d", g.TurnsLeft)
 	}
 }
