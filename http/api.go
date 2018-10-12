@@ -38,9 +38,9 @@ func customNewGame(wordsFile string) http.HandlerFunc {
 		choosenWord := hangman.PickWord(words)
 		game := hangman.NewGame(3, choosenWord)
 		database.DbStore.CreateGame(game)
+		w.WriteHeader(http.StatusNoContent)
 		w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
 	}
-
 }
 
 func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +63,7 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Could not serialize game. Error: %s", err)
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Write(buff)
 }
 
@@ -103,6 +104,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Could not serialize game. Error: %s", err)
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	w.Write(buff)
 }
 
