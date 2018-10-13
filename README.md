@@ -20,7 +20,20 @@ An API provides an elegant way to query and mutate the game state. Any client (c
 
 ## Installing
 
-To install the project, you can use the [dep](https://golang.github.io/dep/) tool.
+To install the project you can run the following command:
+
+```
+go get github.com/mauricioabreu/go-hangman
+```
+
+To run the test suite, use the command `go test -v ./...`
+
+More information is available in our [contributing](CONTRIBUTING.md) guide.
+
+### Dependencies
+
+You can use the [dep](https://golang.github.io/dep/) tool to build dependencies. They are alredy vendored in the project, but
+dep will make it easier to add new dependencies and pin their versions.
 
 Follow the installation guide. Then you can use the command `dep ensure` to install the dependencies.
 
