@@ -1,5 +1,25 @@
 # How to contribute to this project
 
+## Getting the source code
+
+To start with, we’ll need the source code for the project. It’s important that it lives inside the GOPATH, so the easiest way to grab the code is with go get:
+
+```
+go get github.com/mauricioabreu/go-hangman
+```
+
+Now you can work from the following path:
+
+```
+cd $GOPATH/src/github.com/mauricioabreu/go-hangman
+```
+
+To contribute to the project, you can add your remote fork to the git yourself:
+
+```
+git remote add GITHUB_USER https://github.com/GITHUB_USER/go-hangman
+```
+
 ## Running the tests
 
 In the root project, run the command `go test -v ./...` in order to execute the test suite.
