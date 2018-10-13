@@ -33,6 +33,7 @@ func keysFromMap(used map[string]bool) []string {
 
 type gameInfoJSON struct {
 	ID             string   `json:"id"`
+	Word           string   `json:"word"`
 	TurnsLeft      int      `json:"turns_left"`
 	Used           []string `json:"used"`
 	AvailableHints int      `json:"available_hints"`
@@ -65,6 +66,7 @@ func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
+		Word:           hangman.RevealWord(game.Letters, game.Used),
 		TurnsLeft:      game.TurnsLeft,
 		Used:           keysFromMap(game.Used),
 		AvailableHints: game.AvailableHints,
@@ -106,6 +108,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	game, err = database.DbStore.RetrieveGame(game.ID)
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
+		Word:           hangman.RevealWord(game.Letters, game.Used),
 		TurnsLeft:      game.TurnsLeft,
 		Used:           keysFromMap(game.Used),
 		AvailableHints: game.AvailableHints,
