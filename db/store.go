@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
-	hangman "go-hangman/game"
 	"log"
 	"strings"
+
+	"github.com/mauricioabreu/go-hangman/game"
 )
 
 // Store : Handle how games are changed and retrieve from the database

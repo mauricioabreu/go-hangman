@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	database "go-hangman/db"
-	hangman "go-hangman/game"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	hangman "github.com/mauricioabreu/go-hangman/game"
+
+	database "github.com/mauricioabreu/go-hangman/db"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"

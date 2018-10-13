@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	hangman "go-hangman/game"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/mauricioabreu/go-hangman/game"
 
 	"github.com/fatih/color"
 )
