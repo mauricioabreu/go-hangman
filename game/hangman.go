@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// GetSystemRandomInt : generatea random integer value
+// GetSystemRandomInt : generate a random integer value
 func GetSystemRandomInt(i int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(i)
