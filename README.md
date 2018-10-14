@@ -55,6 +55,14 @@ To specify a words file you want to load, you can use the `-words_file` command 
 
     go run http/api.go -words_file=/path/to/my/file.txt
 
+There is an in-memory storage for this game, so you won't need to run a real database:
+
+    go run http/api.go -datastore memory
+
+Other flags can be listed using the help flag:
+
+    go run http/api.go -h
+
 ### Starting a new game:
 
     curl -sv http://localhost:8000/games -XPOST
