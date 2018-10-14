@@ -7,7 +7,7 @@ jobs:
     docker:
       - image: circleci/golang:1.9
       
-    working_directory: /go/src/go-hangman
+    working_directory: /go/src/github.com/mauricioabreu/go-hangman
     steps:
       - checkout
 
