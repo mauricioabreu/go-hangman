@@ -1,26 +1,22 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/mauricioabreu/go-hangman/datastore"
 	hangman "github.com/mauricioabreu/go-hangman/game"
-
-	database "github.com/mauricioabreu/go-hangman/db"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
-	// Used to access pgsql driver
-	_ "github.com/lib/pq"
 )
+
+var store datastore.Store
 
 // Retrieve all keys from a map
 func keysFromMap(used map[string]bool) []string {
@@ -49,15 +45,15 @@ func customNewGame(wordsFile string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		choosenWord := hangman.PickWord(words)
 		game := hangman.NewGame(3, choosenWord)
-		database.DbStore.CreateGame(game)
-		w.WriteHeader(http.StatusNoContent)
+		store.CreateGame(game)
 		w.Header().Set("Location", strings.Join([]string{r.Host, "games", game.ID}, "/"))
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
 func retrieveGameInfo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	game, err := database.DbStore.RetrieveGame(params["id"])
+	game, err := store.RetrieveGame(params["id"])
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -84,7 +80,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	var guess userGuess
 
 	params := mux.Vars(r)
-	game, err := database.DbStore.RetrieveGame(params["id"])
+	game, err := store.RetrieveGame(params["id"])
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -103,9 +99,9 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game = hangman.MakeAGuess(game, guess.Guess)
-	database.DbStore.UpdateGame(game)
+	store.UpdateGame(game)
 
-	game, err = database.DbStore.RetrieveGame(game.ID)
+	game, err = store.RetrieveGame(game.ID)
 	responseJSON := gameInfoJSON{
 		ID:             game.ID,
 		Word:           hangman.RevealWord(game.Letters, game.Used),
@@ -124,7 +120,7 @@ func makeAGuess(w http.ResponseWriter, r *http.Request) {
 
 func deleteGame(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	result, err := database.DbStore.DeleteGame(params["id"])
+	result, err := store.DeleteGame(params["id"])
 	if err != nil {
 		log.Fatalf("Could not delete the game. Error: %s", err)
 	}
@@ -137,12 +133,14 @@ func deleteGame(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var (
+		storeType  string
 		dbUser     string
 		dbName     string
 		dbPassword string
 		wordsFile  string
 	)
 
+	flag.StringVar(&storeType, "datastore", "pg", "Data store type")
 	flag.StringVar(&dbUser, "db_user", "postgres", "Database user")
 	flag.StringVar(&dbName, "db_name", "hangman", "Database name")
 	flag.StringVar(&dbPassword, "db_password", "postgres", "Database password")
@@ -150,23 +148,21 @@ func main() {
 
 	flag.Parse()
 
-	// check if the words file is accessible
-	if _, err := os.Stat(wordsFile); err != nil {
-		log.Fatalf("Could not open the words file: %s\n", err)
+	var err error
+	switch storeType {
+	case "pg":
+		store, err = datastore.NewPgStore(dbName, dbUser, dbPassword)
+	case "memory":
+		store, err = datastore.NewMemoryStore()
 	}
-
-	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", dbUser, dbName, dbPassword)
-	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = db.Ping()
-	if err != nil {
-		panic(err)
+	// check if the words file is accessible
+	if _, err := os.Stat(wordsFile); err != nil {
+		log.Fatalf("Could not open the words file: %s\n", err)
 	}
-
-	database.InitStore(&database.DB{DB: db})
 
 	router := mux.NewRouter()
 	router.Use(commonMiddleware)
