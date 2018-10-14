@@ -1,29 +1,35 @@
-package database
+package datastore
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/mauricioabreu/go-hangman/game"
+
+	// Used to access pgsql driver
+	_ "github.com/lib/pq"
 )
 
-// Store : Handle how games are changed and retrieve from the database
-type Store interface {
-	CreateGame(game hangman.Game) error
-	UpdateGame(game hangman.Game) error
-	RetrieveGame(id string) (hangman.Game, error)
-	DeleteGame(id string) (bool, error)
-}
+// NewPgStore : Initalize a store that uses a postgresql database
+func NewPgStore(dbName string, dbUser string, dbPassword string) (Store, error) {
+	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", dbUser, dbName, dbPassword)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
 
-// DB : Implement the Store interface
-type DB struct {
-	DB *sql.DB
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return &dbStore{DB: db}, nil
 }
 
 // CreateGame : Insert a new game into the database
-func (store *DB) CreateGame(game hangman.Game) error {
-	_, err := store.DB.Exec("INSERT INTO hangman.games (uuid, turns_left, word, used, available_hints) VALUES ($1, $2, $3, $4, $5)",
+func (pgStore dbStore) CreateGame(game hangman.Game) error {
+	_, err := pgStore.DB.Exec("INSERT INTO hangman.games (uuid, turns_left, word, used, available_hints) VALUES ($1, $2, $3, $4, $5)",
 		game.ID, game.TurnsLeft, toString(game.Letters), mapToString(game.Used), game.AvailableHints)
 	if err != nil {
 		log.Println(err)
@@ -35,8 +41,8 @@ func (store *DB) CreateGame(game hangman.Game) error {
 }
 
 // UpdateGame : Update game state
-func (store *DB) UpdateGame(game hangman.Game) error {
-	_, err := store.DB.Exec("UPDATE hangman.games SET turns_left = $1, used = $2, available_hints = $3 WHERE uuid = $4",
+func (pgStore dbStore) UpdateGame(game hangman.Game) error {
+	_, err := pgStore.DB.Exec("UPDATE hangman.games SET turns_left = $1, used = $2, available_hints = $3 WHERE uuid = $4",
 		game.TurnsLeft, mapToString(game.Used), game.AvailableHints, game.ID)
 	if err != nil {
 		log.Println(err)
@@ -48,7 +54,7 @@ func (store *DB) UpdateGame(game hangman.Game) error {
 }
 
 // RetrieveGame : Retrieve a game from the database
-func (store *DB) RetrieveGame(id string) (hangman.Game, error) {
+func (pgStore dbStore) RetrieveGame(id string) (hangman.Game, error) {
 	var (
 		uuid           string
 		turnsLeft      int
@@ -57,7 +63,7 @@ func (store *DB) RetrieveGame(id string) (hangman.Game, error) {
 		availableHints int
 	)
 
-	row := store.DB.QueryRow("SELECT uuid, turns_left, word, used, available_hints FROM hangman.games WHERE uuid = $1", id)
+	row := pgStore.DB.QueryRow("SELECT uuid, turns_left, word, used, available_hints FROM hangman.games WHERE uuid = $1", id)
 	err := row.Scan(&uuid, &turnsLeft, &word, &used, &availableHints)
 
 	switch err {
@@ -77,8 +83,8 @@ func (store *DB) RetrieveGame(id string) (hangman.Game, error) {
 }
 
 // DeleteGame : remove a game from the database
-func (store *DB) DeleteGame(id string) (bool, error) {
-	result, err := store.DB.Exec("DELETE FROM hangman.games WHERE uuid = $1", id)
+func (pgStore dbStore) DeleteGame(id string) (bool, error) {
+	result, err := pgStore.DB.Exec("DELETE FROM hangman.games WHERE uuid = $1", id)
 	if err == nil {
 		// Check if there was a game to delete
 		count, err := result.RowsAffected()
@@ -90,14 +96,6 @@ func (store *DB) DeleteGame(id string) (bool, error) {
 		}
 	}
 	return false, err
-}
-
-// DbStore : database
-var DbStore Store
-
-// InitStore : initialize the storage backend
-func InitStore(s Store) {
-	DbStore = s
 }
 
 func toString(arr []string) string {
