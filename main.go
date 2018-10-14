@@ -9,7 +9,7 @@ More information here: https://en.wikipedia.org/wiki/Hangman_(game)
 package main
 
 import (
-	"go-hangman/cli"
+	"github.com/mauricioabreu/go-hangman/cli"
 )
 
 func main() {
