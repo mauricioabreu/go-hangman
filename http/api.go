@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,6 +34,19 @@ type gameInfoJSON struct {
 	TurnsLeft      int      `json:"turns_left"`
 	Used           []string `json:"used"`
 	AvailableHints int      `json:"available_hints"`
+}
+
+func (a *gameInfoJSON) equals(b gameInfoJSON) bool {
+	if a.ID != b.ID || a.TurnsLeft != b.TurnsLeft || a.Word != b.Word {
+		return false
+	}
+	used := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(b.Used)), ","), "[]")
+	for _, ele := range a.Used {
+		if !strings.Contains(used, ele) {
+			return false
+		}
+	}
+	return true
 }
 
 type userGuess struct {
@@ -148,6 +162,21 @@ func main() {
 
 	flag.Parse()
 
+	configureStoreType(storeType, dbName, dbUser, dbPassword)
+
+	// check if the words file is accessible
+	if _, err := os.Stat(wordsFile); err != nil {
+		log.Fatalf("Could not open the words file: %s\n", err)
+	}
+
+	router := Router(wordsFile)
+	// Set logger handler for the server
+	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
+	log.Println("Starting HTTP server...")
+	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
+}
+
+func configureStoreType(storeType, dbName, dbUser, dbPassword string) {
 	var err error
 	switch storeType {
 	case "pg":
@@ -158,12 +187,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
-	// check if the words file is accessible
-	if _, err := os.Stat(wordsFile); err != nil {
-		log.Fatalf("Could not open the words file: %s\n", err)
-	}
-
+func Router(wordsFile string) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(commonMiddleware)
 	// Register HTTP endpoints
@@ -171,10 +197,7 @@ func main() {
 	router.HandleFunc("/games/{id}", retrieveGameInfo).Methods("GET")
 	router.HandleFunc("/games/{id}/guesses", makeAGuess).Methods("PUT")
 	router.HandleFunc("/games/{id}", deleteGame).Methods("DELETE")
-	// Set logger handler for the server
-	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	log.Println("Starting HTTP server...")
-	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
+	return router
 }
 
 func commonMiddleware(next http.Handler) http.Handler {
